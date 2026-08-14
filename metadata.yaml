@@ -1,0 +1,7 @@
+name: astrbot_plugin_meting
+display_name: Meting Music Tools
+desc: 基于 MetingAPI 的点歌插件，仅通过LLM Tools可用。
+version: v1.0.1
+author: 枝动力
+repo: https://github.com/zhidongli-a/astrbot_plugin_meting_music_tools
+astrbot_version: ">=4.17.6"
