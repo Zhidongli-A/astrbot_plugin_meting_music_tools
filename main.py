@@ -1,4 +1,4 @@
- import asyncio
+import asyncio
 import json
 import os
 import re
@@ -35,7 +35,7 @@ class AudioFormatError(MetingPluginError):
     pass
 
 
-@register("astrbot_plugin_meting", "chuyegzs", "基于 MetingAPI 的点歌插件", PL_VERSION)
+@register("astrbot_plugin_meting", "chuyegzs", "基于 MetingAPI 的点歌插�?", PL_VERSION)
 class MetingPlugin(Star):
     """MetingAPI 点歌插件 - 仅支持网易云"""
 
@@ -51,7 +51,7 @@ class MetingPlugin(Star):
         return self._http_session
 
     async def initialize(self):
-        logger.info("MetingAPI 点歌插件初始化完成")
+        logger.info("MetingAPI 点歌插件初始化完�?")
 
     def _get_config(self, key: str, default):
         if not self.config:
@@ -101,11 +101,11 @@ class MetingPlugin(Star):
             count = self.get_search_result_count()
             return data[:count]
         except Exception as e:
-            logger.error(f"搜索歌曲时发生错误: {e}", exc_info=True)
+            logger.error(f"搜索歌曲时发生错�?: {e}", exc_info=True)
             return None
 
     async def _download_song(self, url: str, sender_id: str) -> tuple[str, float]:
-        """下载歌曲 - 格式固定为 MP3，不进行转码"""
+        """下载歌曲 - 格式固定�? MP3，不进行转码"""
         session = self._ensure_session()
         safe_sender_id = "".join(c for c in str(sender_id) if c.isalnum() or c in "._-")
         temp_dir = tempfile.gettempdir()
@@ -115,7 +115,7 @@ class MetingPlugin(Star):
         )
 
         try:
-            logger.debug(f"开始下载歌曲: {url}")
+            logger.debug(f"�?始下载歌�?: {url}")
 
             def _do_download():
                 r = session.get(url, timeout=120, stream=True, allow_redirects=True)
@@ -139,17 +139,17 @@ class MetingPlugin(Star):
             await asyncio.to_thread(_do_download)
 
             if os.path.getsize(temp_file) == 0:
-                raise DownloadError("下载的文件为空")
+                raise DownloadError("下载的文件为�?")
 
             logger.info(
-                f"歌曲下载成功: {temp_file}，大小: {os.path.getsize(temp_file) / (1024 * 1024):.2f} MB"
+                f"歌曲下载成功: {temp_file}，大�?: {os.path.getsize(temp_file) / (1024 * 1024):.2f} MB"
             )
 
             duration = await self._get_audio_info(temp_file)
             if duration is None or duration <= 0:
-                raise AudioFormatError("下载的文件不是有效音频")
+                raise AudioFormatError("下载的文件不是有效音�?")
 
-            logger.debug(f"音频验证通过，时长: {duration:.2f}秒")
+            logger.debug(f"音频验证通过，时�?: {duration:.2f}�?")
             return temp_file, duration
 
         except (DownloadError, AudioFormatError):
@@ -160,7 +160,7 @@ class MetingPlugin(Star):
                     pass
             raise
         except Exception as e:
-            logger.error(f"下载歌曲时发生错误: {e}", exc_info=True)
+            logger.error(f"下载歌曲时发生错�?: {e}", exc_info=True)
             if os.path.exists(temp_file):
                 try:
                     os.remove(temp_file)
@@ -197,13 +197,13 @@ class MetingPlugin(Star):
     async def _split_and_send_audio(
         self, event: AstrMessageEvent, temp_file: str, session_id: str, duration: float
     ):
-        """处理并发送音频 - 转换为 WAV(24kHz 单声道) 后发送语音"""
+        """处理并发送音�? - 转换�? WAV(24kHz 单声�?) 后发送语�?"""
         temp_files_to_cleanup = [temp_file]
 
         try:
             if not self._ffmpeg_path:
                 logger.error("FFmpeg 调用失败")
-                await event.send(event.plain_result("音频处理组件依赖加载失败。"))
+                await event.send(event.plain_result("音频处理组件依赖加载失败�?"))
                 return
 
             base_name = os.path.splitext(os.path.basename(temp_file))[0]
@@ -233,25 +233,25 @@ class MetingPlugin(Star):
                     process.communicate(), timeout=FFMPEG_CONVERT_TIMEOUT
                 )
             except asyncio.TimeoutError:
-                logger.error("音频转码超时，尝试清理损坏的文件。")
+                logger.error("音频转码超时，尝试清理损坏的文件�?")
                 await event.send(event.plain_result("音频转换超时"))
                 return
 
             if process.returncode != 0 or not os.path.exists(processed_file):
-                logger.error("音频转码失败，尝试清理损坏的文件。")
+                logger.error("音频转码失败，尝试清理损坏的文件�?")
                 await event.send(event.plain_result("音频转换失败"))
                 return
 
-            logger.debug("直接发送完整音频")
+            logger.debug("直接发�?�完整音�?")
             await event.send(
                 event.chain_result([Record.fromFileSystem(processed_file)])
             )
 
         except asyncio.CancelledError:
-            logger.info("音频处理任务被取消")
-            await event.send(event.plain_result("音频处理已取消"))
+            logger.info("音频处理任务被取�?")
+            await event.send(event.plain_result("音频处理已取�?"))
         except Exception as e:
-            logger.error(f"处理音频时发生错误: {e}", exc_info=True)
+            logger.error(f"处理音频时发生错�?: {e}", exc_info=True)
             await event.send(event.plain_result("音频处理失败，请稍后重试"))
         finally:
             for f in temp_files_to_cleanup:
@@ -264,7 +264,7 @@ class MetingPlugin(Star):
     async def _play_song_logic(
         self, event: AstrMessageEvent, song: dict, session_id: str
     ):
-        """播放歌曲 - 下载并发送语音"""
+        """播放歌曲 - 下载并发送语�?"""
         song_url = song.get("url")
         if not song_url:
             await event.send(event.plain_result("获取歌曲播放地址失败"))
@@ -276,16 +276,16 @@ class MetingPlugin(Star):
             )
             await self._split_and_send_audio(event, temp_file, session_id, duration)
         except asyncio.CancelledError:
-            logger.info("播放任务被取消")
-            await event.send(event.plain_result("播放已取消"))
+            logger.info("播放任务被取�?")
+            await event.send(event.plain_result("播放已取�?"))
         except DownloadError as e:
             logger.error(f"下载歌曲失败: {e}")
             await event.send(event.plain_result(f"下载失败: {e}"))
         except AudioFormatError as e:
             logger.error(f"音频格式错误: {e}")
-            await event.send(event.plain_result(f"格式不支持: {e}"))
+            await event.send(event.plain_result(f"格式不支�?: {e}"))
         except Exception as e:
-            logger.error(f"播放歌曲时发生错误: {e}", exc_info=True)
+            logger.error(f"播放歌曲时发生错�?: {e}", exc_info=True)
             await event.send(event.plain_result("播放失败，请稍后重试"))
 
     @filter.llm_tool("astr_meting_music")
@@ -295,24 +295,24 @@ class MetingPlugin(Star):
         keyword: str,
         index: int = -1,
     ) -> str:
-        """这是一个用于搜索和播放网易云音乐的函数。
-        搜索音乐：提供 keyword (如歌曲名或歌手)，index 保留为 -1 或指定为 -1。返回搜索结果列表（包含序号、歌名、歌手等）的 JSON。
-        播放音乐：提供 keyword 和 index (从 0 开始的序号)。直接发送语音。
-        注意：点歌成功时返回"点歌任务执行成功！"，此时音乐已发送，无需再回复。
+        """这是�?个用于搜索和播放网易云音乐的函数�?
+        搜索音乐：提�? keyword (如歌曲名或歌�?)，index 保留�? -1 或指定为 -1。返回搜索结果列表（包含序号、歌名�?�歌手等）的 JSON�?
+        播放音乐：提�? keyword �? index (�? 0 �?始的序号)。直接发送语音�??
+        注意：点歌成功时返回"点歌任务执行成功�?"，此时音乐已发�?�，无需再回复�??
 
         Args:
-            keyword (string): 搜索关键词（歌手名、歌曲名等）
-            index (number): 歌曲序号。-1 表示仅搜索，0 表示第一首，依次类推
+            keyword (string): 搜索关键词（歌手名�?�歌曲名等）
+            index (number): 歌曲序号�?-1 表示仅搜索，0 表示第一首，依次类推
         """
         try:
             try:
                 index = int(index)
             except (TypeError, ValueError, OverflowError):
-                return f"无效的序号：{index}，请传入整数序号（-1 表示仅搜索）。"
+                return f"无效的序号：{index}，请传入整数序号�?-1 表示仅搜索）�?"
 
             results = await self._perform_search(keyword)
             if not results:
-                return "未搜索到任何相关歌曲。"
+                return "未搜索到任何相关歌曲�?"
 
             if index < 0:
                 summary_results = []
@@ -329,20 +329,20 @@ class MetingPlugin(Star):
                 return json.dumps(summary_results, ensure_ascii=False)
 
             if index >= len(results):
-                return f"指定的序号 {index} 超出搜索结果范围，最大可选序号为 {len(results) - 1}。"
+                return f"指定的序�? {index} 超出搜索结果范围，最大可选序号为 {len(results) - 1}�?"
 
             target_song = results[index]
             session_id = event.unified_msg_origin
 
             await self._play_song_logic(event, target_song, session_id)
-            return "点歌任务执行成功！"
+            return "点歌任务执行成功�?"
 
         except Exception as e:
             logger.error(f"音乐搜索/播放失败：{e}", exc_info=True)
             return f"发生了错误：{e}"
 
     async def terminate(self):
-        """插件终止时清理资源"""
+        """插件终止时清理资�?"""
         if self._http_session:
             try:
                 self._http_session.close()
