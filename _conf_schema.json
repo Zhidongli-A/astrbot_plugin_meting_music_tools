@@ -1,124 +1,24 @@
 {
-  "api_config": {
-    "description": "MetingAPI 配置",
-    "type": "object",
-    "hint": "配置 MetingAPI",
-    "items": {
-      "api_url": {
-        "description": "MetingAPI 地址",
-        "type": "string",
-        "hint": "选择 API , 如需自定义请选择 custom",
-        "options": [
-          "https://musicapi.chuyel.top/meting/",
-          "https://metingapi.nanorocky.top/",
-          "https://meting.mikus.ink/",
-          "https://metingapi.mo-app.cn/",
-          "custom"
-        ],
-        "default": "https://musicapi.chuyel.top/meting/"
-      },
-      "api_type": {
-        "description": "API 类型",
-        "type": "int",
-        "hint": "[仅在 API 地址为 custom 时生效]\n1: Node API [默认], 2: PHP API, 3: 自定义参数",
-        "default": 1,
-        "minimum": 1,
-        "maximum": 3
-      },
-      "custom_api_url": {
-        "description": "自定义 API 地址",
-        "type": "string",
-        "hint": "[仅在 API 地址为 custom 时生效]\n不带 /api 的后缀, 例如： https://api.example.com/meting/, \n[请注意 URL 完整性, 以 '/' 结尾]"
-      },
-      "custom_api_template": {
-        "description": "自定义 API 模板",
-        "type": "string",
-        "hint": "[仅在 API 地址为 custom 且 API 类型为 3 时生效]\n模板中必须包含 :server、:type、:id、:r 四个占位符, 例如： server=:server&type=:type&id=:id&r=:r"
-      }
-    }
+  "api_url": {
+    "description": "MetingAPI 地址",
+    "type": "string",
+    "hint": "NodeApi 格式的 MetingAPI 地址，以 / 结尾",
+    "default": "https://api.qijieya.cn/meting/"
   },
-  "search_config": {
-    "description": "搜索结果配置",
-    "type": "object",
-    "hint": "搜索和点歌相关设置",
-    "items": {
-      "default_source": {
-        "description": "默认音源",
-        "type": "string",
-        "hint": "可选: tencent (QQ音乐)、netease (网易云)、kugou (酷狗)、kuwo (酷我), 具体可用音源取决于所选 API 的支持情况",
-        "options": [
-          "netease",
-          "tencent",
-          "kugou",
-          "kuwo"
-        ],
-        "default": "netease"
-      },
-      "search_result_expiration_time": {
-        "description": "搜索结果过期时间（秒）",
-        "type": "int",
-        "hint": "搜索结果在指定时间后过期, 范围: 30-300秒, 默认120秒。同时如果搜索结果超时被撤回, 也会被视为过期。",
-        "default": 120,
-        "minimum": 30,
-        "maximum": 300
-      },
-      "search_results_withdrawn_after_timeout": {
-        "description": "搜索结果超时撤回时间 (秒)",
-        "type": "int",
-        "hint": "搜索结果在指定时间后自动撤回, 范围：-1至300秒, 0 会在用户完成点歌后自动撤回, -1 则不自动撤回, 默认 60 秒。同时如果搜索结果已经过期, 也会自动撤回消息。",
-        "default": 60,
-        "minimum": -1,
-        "maximum": 300
-      },
-      "search_result_restrictions": {
-        "description": "搜索结果仅对搜索本人有效",
-        "type": "bool",
-        "hint": "启用后, A 用户使用'搜歌'指令搜索的歌曲, 只有 A 用户可以使用'点歌 1'指令点歌。对其它用户独立, 且不覆盖, 互不干扰。默认禁用。",
-        "default": false
-      },
-      "search_result_count": {
-        "description": "搜索结果显示数量",
-        "type": "int",
-        "hint": "搜索结果显示的歌曲数量, 范围: 5-30",
-        "default": 10,
-        "minimum": 5,
-        "maximum": 30
-      }
-    }
+  "search_result_count": {
+    "description": "搜索结果显示数量",
+    "type": "int",
+    "hint": "搜索结果显示的歌曲数量，范围: 5-30",
+    "default": 10,
+    "minimum": 5,
+    "maximum": 30
   },
-  "download_config": {
-    "description": "下载配置",
-    "type": "object",
-    "hint": "歌曲下载与缓存相关设置",
-    "items": {
-      "max_file_size": {
-        "description": "最大文件大小 (MB)",
-        "type": "int",
-        "hint": "下载歌曲的最大文件大小, 范围: 10-200MB, 默认80MB",
-        "default": 80,
-        "minimum": 10,
-        "maximum": 200
-      },
-      "enable_cache": {
-        "description": "启用缓存",
-        "type": "bool",
-        "hint": "开启后会缓存原音乐, 减少带宽占用并加快歌曲发送速度, 但会占用更多磁盘空间",
-        "default": false
-      },
-      "daily_cleanup_time": {
-        "description": "每日定时清理时间",
-        "type": "string",
-        "hint": "每日定时清理缓存和临时文件的时间, 格式为 HH:MM, 默认 04:30\n[注：插件每次启动时都会直接清空缓存。]",
-        "default": "04:30"
-      },
-      "max_cache_size": {
-        "description": "最大缓存大小 (GB)",
-        "type": "int",
-        "hint": "当启用缓存时, 设置缓存的最大占用空间, 范围: 1-32GB, 默认1GB。\n[注：当缓存占用空间超过此值时, 插件会自动清理最旧的缓存文件以释放空间。一旦触发，会清理到剩余占用小于等于此值的 50% 为止。]",
-        "default": 1,
-        "minimum": 1,
-        "maximum": 32
-      }
-    }
+  "max_file_size": {
+    "description": "最大文件大小 (MB)",
+    "type": "int",
+    "hint": "下载歌曲的最大文件大小，范围: 10-200MB",
+    "default": 80,
+    "minimum": 10,
+    "maximum": 200
   }
 }
